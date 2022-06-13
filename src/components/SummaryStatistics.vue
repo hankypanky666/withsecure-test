@@ -7,6 +7,10 @@
         <div class="item-content">{{ totalNotes }}</div>
       </div>
       <div class="item">
+        <div class="item-header">New</div>
+        <div class="item-content">{{ newNotes }}</div>
+      </div>
+      <div class="item">
         <div class="item-header">Completed</div>
         <div class="item-content">{{ completedNotes }}</div>
       </div>
@@ -29,7 +33,7 @@ export default defineComponent({
   components: { UiCard },
   setup() {
     const notesStore = useNotesStore();
-    const { notes, totalNotes, completedNotes, notCompletedNotes } =
+    const { notes, totalNotes, completedNotes, notCompletedNotes, newNotes } =
       storeToRefs(notesStore);
 
     console.log("notes: ", notes);
@@ -39,6 +43,7 @@ export default defineComponent({
       totalNotes,
       completedNotes,
       notCompletedNotes,
+      newNotes,
     };
   },
 });

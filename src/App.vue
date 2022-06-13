@@ -1,24 +1,39 @@
 <template>
   <main>
     <SummaryStatistics />
-    <UiTable @onCheckItem="handleItemChange" :table-data="notes" />
+    <UiTable
+      select-field-name="checked"
+      @onCheckItem="handleItemChange"
+      :table-data="notes"
+    />
 
-    <template v-if="checkedNotes.size">
+    <UiButton @click="handleAddNote">Add</UiButton>
+
+    <template v-if="checkedNotesLen">
       <UiAlert
         ><p>
           {{
-            checkedNotes.size > 1
+            checkedNotesLen > 1
               ? "Do you want to delete these notes?"
               : "Do you want to delete this note?"
           }}
         </p>
         <template #actions
-          ><UiButton @click="clearChecks">No</UiButton
-          ><UiButton @click="handleDeleteNote">Yes</UiButton></template
+          ><UiButton color="warn" @click="clearChecks">No</UiButton
+          ><UiButton color="secondary" @click="handleDeleteNote"
+            >Yes</UiButton
+          ></template
         ></UiAlert
       >
     </template>
   </main>
+
+  <UiModal :show="showAddNote">
+    <AddNote
+      @saveNote="addNewNote"
+      :close-modal="() => (showAddNote = false)"
+    ></AddNote>
+  </UiModal>
 </template>
 
 <style>
@@ -36,56 +51,64 @@ import SummaryStatistics from "@/components/SummaryStatistics.vue";
 import UiTable from "@/components/ui/UiTable.vue";
 import UiAlert from "@/components/ui/UiAlert.vue";
 import UiButton from "@/components/ui/UiButton.vue";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import { useNotesStore } from "@/stores/notes";
 import { storeToRefs } from "pinia";
+import type { Note } from "@/__mockData__/notes";
+import UiModal from "@/components/ui/UiModal.vue";
+import AddNote from "@/components/AddNote.vue";
 
 export default defineComponent({
-  components: { UiTable, SummaryStatistics, UiAlert, UiButton },
-
-  data() {
-    return {
-      checkedNotes: new Set<HTMLInputElement>(),
-    };
+  components: {
+    AddNote,
+    UiModal,
+    UiTable,
+    SummaryStatistics,
+    UiAlert,
+    UiButton,
   },
 
   setup() {
+    const showAddNote = ref(false);
     const notesStore = useNotesStore();
-    const { notes } = storeToRefs(notesStore);
-    const { deleteNote } = notesStore;
+    const { notes, checkedNotesLen } = storeToRefs(notesStore);
+    const { deleteNote, updateNote, clearCheckedNotes, addNote } = notesStore;
 
     return {
       notes,
       deleteNote,
+      updateNote,
+      checkedNotesLen,
+      clearCheckedNotes,
+      showAddNote,
+      addNote,
     };
   },
 
   methods: {
-    handleItemChange(event: Event) {
-      const target = event.target as HTMLInputElement;
-
-      if (target.checked) {
-        this.checkedNotes.add(target);
-      } else {
-        this.checkedNotes.delete(target);
-      }
+    handleItemChange(note: Note) {
+      this.updateNote(note.id, !note.checked);
     },
 
     // ^_^
     clearChecks() {
-      this.checkedNotes.forEach((t) => (t.checked = false));
-      this.checkedNotes.clear();
+      this.clearCheckedNotes();
     },
 
     // looks little bit tricky but i just wanted to create UI for tables and manage them outside and don`t create deps for store
     handleDeleteNote() {
-      if (!this.checkedNotes.size) return;
+      if (!this.checkedNotesLen) return;
 
-      this.checkedNotes.forEach((t) => {
-        this.deleteNote(+t.value);
-        this.checkedNotes.delete(t);
-        this.clearChecks();
-      });
+      this.deleteNote();
+    },
+
+    handleAddNote() {
+      this.showAddNote = !this.showAddNote;
+    },
+
+    addNewNote(note: { title: string; content: string }) {
+      this.addNote(note);
+      this.showAddNote = false;
     },
   },
 });

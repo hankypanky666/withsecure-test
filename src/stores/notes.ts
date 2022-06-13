@@ -4,9 +4,17 @@ import { notes } from "@/__mockData__/notes";
 export const useNotesStore = defineStore({
   id: "notes",
   state: () => ({
-    notes,
+    notes: notes.map((n) => {
+      return {
+        ...n,
+        checked: false,
+      };
+    }),
   }),
   getters: {
+    newNotes(state) {
+      return state.notes.filter((n) => n.status === "New").length || 0;
+    },
     totalNotes(state) {
       return state.notes.length || 0;
     },
@@ -18,10 +26,50 @@ export const useNotesStore = defineStore({
         state.notes.filter((n) => n.status === "Not completed").length || 0
       );
     },
+    checkedNotesLen(state) {
+      return state.notes.filter((n) => n.checked).length || 0;
+    },
   },
   actions: {
-    deleteNote(id: number) {
-      this.notes = this.notes.filter((n) => n.id !== id);
+    updateNote(noteId: number, checked: boolean) {
+      this.notes = this.notes.map((n) => {
+        if (n.id === noteId) {
+          return {
+            ...n,
+            checked,
+          };
+        }
+
+        return { ...n };
+      });
+    },
+
+    clearCheckedNotes() {
+      this.notes = this.notes.map((n) => {
+        return {
+          ...n,
+          checked: false,
+        };
+      });
+    },
+
+    deleteNote() {
+      this.notes = this.notes.filter((n) => !n.checked);
+    },
+
+    addNote(note: { title: string; content: string }) {
+      const lastEl = this.notes[this.notes.length - 1] || null;
+
+      if (lastEl?.id) {
+        const newNote: any = {
+          id: +lastEl.id + 1,
+          title: note.title,
+          content: note.content,
+          status: "New",
+          checked: false,
+        };
+        this.notes = [...this.notes, newNote];
+      }
     },
   },
 });

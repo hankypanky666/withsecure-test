@@ -1,5 +1,5 @@
 <template>
-  <button class="ui-button">
+  <button class="ui-button" :class="classObject">
     <slot name="image"></slot>
     <slot></slot>
   </button>
@@ -10,6 +10,21 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "UiButton",
+
+  props: {
+    color: {
+      type: String,
+      default: "primary",
+    },
+  },
+
+  computed: {
+    classObject() {
+      return {
+        [this.color]: !!this.color?.length,
+      };
+    },
+  },
 });
 </script>
 
@@ -17,6 +32,22 @@ export default defineComponent({
 button {
   all: initial;
 }
+
+.ui-button.primary {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.ui-button.warn {
+  background-color: red;
+  color: white;
+}
+
+.ui-button.secondary {
+  background-color: white;
+  color: red;
+}
+
 .ui-button {
   border: 1px solid #ffffff;
   padding: 12px;

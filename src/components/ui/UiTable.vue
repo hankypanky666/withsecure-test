@@ -10,14 +10,15 @@
 
         <template v-for="item in tableData">
           <tr>
-            <template v-for="(data, _, index) in item" :key="data">
-              <td>
-                <template v-if="index === 0">
+            <template v-for="(data, name, index) in item" :key="data">
+              <td v-if="name !== selectFieldName">
+                <template v-if="index === 0 && selectFieldName?.length">
                   <input
-                    @change.prevent="$emit('onCheckItem', $event)"
+                    @change.prevent="$emit('onCheckItem', item)"
                     type="checkbox"
                     :name="data"
                     :value="data"
+                    :checked="item.checked"
                   />
                 </template>
                 {{ data }}
@@ -40,6 +41,9 @@ export default defineComponent({
       type: Array,
       default: [],
     },
+    selectFieldName: {
+      type: String,
+    },
   },
 
   emits: ["onCheckItem"],
@@ -53,7 +57,13 @@ export default defineComponent({
       if (!this.tableData?.length) return;
       const firstObjectFromArr = this.tableData[0] as Note;
 
-      return Object.keys(firstObjectFromArr);
+      if (!this.selectFieldName?.length) {
+        return Object.keys(firstObjectFromArr);
+      } else {
+        return Object.keys(firstObjectFromArr).filter(
+          (key) => key !== this.selectFieldName
+        );
+      }
     },
   },
 });
