@@ -1,81 +1,92 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
   <main>
-    <TheWelcome />
+    <SummaryStatistics />
+    <UiTable @onCheckItem="handleItemChange" :table-data="notes" />
+
+    <template v-if="checkedNotes.size">
+      <UiAlert
+        ><p>
+          {{
+            checkedNotes.size > 1
+              ? "Do you want to delete these notes?"
+              : "Do you want to delete this note?"
+          }}
+        </p>
+        <template #actions
+          ><UiButton @click="clearChecks">No</UiButton
+          ><UiButton @click="handleDeleteNote">Yes</UiButton></template
+        ></UiAlert
+      >
+    </template>
   </main>
 </template>
 
 <style>
-@import './assets/base.css';
+@import "./assets/base.css";
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  font-weight: normal;
-}
-
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
-
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
+
+<script lang="ts">
+import SummaryStatistics from "@/components/SummaryStatistics.vue";
+import UiTable from "@/components/ui/UiTable.vue";
+import UiAlert from "@/components/ui/UiAlert.vue";
+import UiButton from "@/components/ui/UiButton.vue";
+import { defineComponent } from "vue";
+import { useNotesStore } from "@/stores/notes";
+import { storeToRefs } from "pinia";
+
+export default defineComponent({
+  components: { UiTable, SummaryStatistics, UiAlert, UiButton },
+
+  data() {
+    return {
+      checkedNotes: new Set<HTMLInputElement>(),
+    };
+  },
+
+  setup() {
+    const notesStore = useNotesStore();
+    const { notes } = storeToRefs(notesStore);
+    const { deleteNote } = notesStore;
+
+    return {
+      notes,
+      deleteNote,
+    };
+  },
+
+  methods: {
+    handleItemChange(event: Event) {
+      const target = event.target as HTMLInputElement;
+
+      if (target.checked) {
+        this.checkedNotes.add(target);
+      } else {
+        this.checkedNotes.delete(target);
+      }
+    },
+
+    // ^_^
+    clearChecks() {
+      this.checkedNotes.forEach((t) => (t.checked = false));
+      this.checkedNotes.clear();
+    },
+
+    // looks little bit tricky but i just wanted to create UI for tables and manage them outside and don`t create deps for store
+    handleDeleteNote() {
+      if (!this.checkedNotes.size) return;
+
+      this.checkedNotes.forEach((t) => {
+        this.deleteNote(+t.value);
+        this.checkedNotes.delete(t);
+        this.clearChecks();
+      });
+    },
+  },
+});
+</script>
