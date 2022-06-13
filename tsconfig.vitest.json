@@ -3,6 +3,7 @@
   "exclude": [],
   "compilerOptions": {
     "composite": true,
+    "useUnknownInCatchVariables": false,
     "lib": [],
     "types": ["node", "jsdom"]
   }

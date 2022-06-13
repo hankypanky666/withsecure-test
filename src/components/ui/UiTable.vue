@@ -38,8 +38,7 @@ export default defineComponent({
   name: "UiTable",
   props: {
     tableData: {
-      type: Array,
-      default: [],
+      type: Array as any,
     },
     selectFieldName: {
       type: String,

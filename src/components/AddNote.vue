@@ -31,7 +31,7 @@
     </div>
     <div class="footer">
       <UiButton @click="handleSaveModal">Save</UiButton>
-      <UiButton @click="closeModal" color="secondary">Cancel</UiButton>
+      <UiButton @click="() => closeModal()" color="secondary">Cancel</UiButton>
     </div>
   </div>
 </template>
@@ -50,7 +50,7 @@ export default defineComponent({
 
   data() {
     return {
-      formErrors: [],
+      formErrors: [] as string[],
       form: {
         title: "",
         content: "",
@@ -74,11 +74,11 @@ export default defineComponent({
       this.formErrors = [];
 
       if (!this.form.content) {
-        this.formErrors.push("content reqired");
+        this.formErrors.push("content required");
       }
 
       if (!this.form.title) {
-        this.formErrors.push("title reqired");
+        this.formErrors.push("title required");
       }
     },
   },
